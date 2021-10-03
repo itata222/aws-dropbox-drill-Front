@@ -1,10 +1,12 @@
 import React, { createContext, useReducer } from 'react';
+import { getUserFromCookie } from '../cookies/userDataCookie';
 import loginReducer, { userDataInitialState } from '../reducers/loginReducer';
 
 export const LoginContext = createContext();
 
 const LoginContextProvider = (props) => {
-    const [userData, dispatchUserData] = useReducer(loginReducer, userDataInitialState );
+    const userDataCookie=getUserFromCookie();
+    const [userData, dispatchUserData] = useReducer(loginReducer, userDataCookie||userDataInitialState );
 
     return (
         <LoginContext.Provider value={{ userData, dispatchUserData }}>

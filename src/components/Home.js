@@ -1,37 +1,63 @@
 import React, { useContext, useEffect, useState } from 'react';
-import {  setImagesAction } from '../actions/imagesActions';
+// import {  setImagesAction } from '../actions/imagesActions';
 import { ImagesContext} from '../contexts/imagesContext';
-import { getMyImagesFromDB } from '../services/userService';
+import {LoginContext} from '../contexts/loginContext'
+import { getMyImagesFromDB, uploadImageToDB } from '../services/userService';
 import Image from './Image';
 import Spinner from './Spinner';
 
 const Home = () => {
-    const {dispatchImagesData,imagesData}=useContext(ImagesContext);
-    const [showSpinner, setShowSpinner] = useState(false)
-    useEffect(() => {
-        setShowSpinner(true)
-        getMyImagesFromDB().then((res)=>{
-            dispatchImagesData(setImagesAction(res));
-            setShowSpinner(false)
-        })
-    }, [dispatchImagesData])
+    // const [showUploadImages, setShowUploadImages] = useState(false)
+    const {dispatchImagesData}=useContext(ImagesContext);
+    const {userData}=useContext(LoginContext)
+    const [showSpinner, setShowSpinner] = useState(false);
+    const [images, setImages] = useState([])
     
-    const uploadImagesFunc=()=>{
-        console.log('clicked2')
+    // const URL="http://localhost:4000/get-images"
+    
+    useEffect(() => {
+        let isComponentExist=true;
+        setShowSpinner(true)
+        if(isComponentExist){
+            getMyImagesFromDB(userData.token).then((res)=>{
+                console.log('1',res)
+                setImages(res)
+                setShowSpinner(false)
+                isComponentExist=false;
+            })
+        }
+    }, [dispatchImagesData,userData.token])
+
+    
+    const uploadImagesFunc=(event)=>{
+        event.preventDefault();
+        const image = event.target.children[0].files[0];
+        const formData = new FormData();
+        formData.append("image", image);
+    
+        uploadImageToDB(formData,userData.token)
+          .then(res => {
+            console.log(res);
+            return getMyImagesFromDB(userData.token);
+          })
+          .then(newImages => {
+            setImages(newImages)
+        });
     }
     
     return (
         <div className="home">
             {showSpinner&&<Spinner/>}
-            <h1>DropBox</h1>
-            <div className="my-images">
-                {
-                    imagesData.map(image=>(
-                        <Image image={image} key={image.id}/>
-                    ))
-                }
-            </div>
-            <button onClick={uploadImagesFunc}>Upload Images</button>
+            <h1>Image App</h1>
+            <form onSubmit={ uploadImagesFunc }>
+                <input type="file" name="image" />
+                <button type="submit">Submit</button>
+            </form>
+            {
+                images.map(image => (
+                <Image image={image} setImages={setImages} key={image._id}/>
+                ))
+            }
         </div>
     )
 }

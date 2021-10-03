@@ -2,6 +2,7 @@ import React, { useContext } from 'react'
 import { useHistory } from 'react-router';
 import { logoutAction } from '../actions/loginActions'
 import { LoginContext } from '../contexts/loginContext'
+import { deleteUserFromCookie } from '../cookies/userDataCookie';
 
 const Header = () => {
     const {userData,dispatchUserData}=useContext(LoginContext);
@@ -15,6 +16,7 @@ const Header = () => {
                 !!userData.token?
                 <span onClick={()=>{
                     dispatchUserData(logoutAction())
+                    deleteUserFromCookie()
                 }}>
                     Logout
                 </span>:

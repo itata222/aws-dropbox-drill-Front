@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react'
 import { useHistory } from 'react-router';
 import { loginAction } from '../actions/loginActions';
 import { LoginContext } from '../contexts/loginContext';
+import { saveUserOnCookie } from '../cookies/userDataCookie';
 import { loginToDB } from '../services/userService';
 
 const Login = () => {
@@ -14,6 +15,7 @@ const Login = () => {
     const submitLogin=(e)=>{
         e.preventDefault();
         loginToDB({email,password}).then((data)=>{
+            saveUserOnCookie(data)
             dispatchUserData(loginAction({user:data.user,token:data.token}))
             history.push('/home')
         }).catch((e)=>setShowErrorMessage(true))
@@ -28,7 +30,7 @@ const Login = () => {
                 <input placeholder="password" type="password" value={password} onChange={(e)=>{
                     setPassword(e.target.value)
                 }}/>
-                {showErrorMessage&&<div className="error-message">Unable to login</div>}
+                {showErrorMessage&&<div className="errorMessage">Unable to login</div>}
                 <button>Login</button>
             </form>
         </div>
